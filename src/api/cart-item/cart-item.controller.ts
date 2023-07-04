@@ -1,13 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import cartItemService from './cart-item.service';
 import productService from '../product/product.service';
+import { CartItem } from './cart-item.entity';
+import { TypedRequest } from '../../utils/typed-request.interface';
 
 export const list = async (req: Request, res: Response, next: NextFunction) => {
   const list = await cartItemService.find();
   res.json(list);
 }
 
-export const add = async (req: Request, res: Response, next: NextFunction) => {
+export const add = async (
+  req: TypedRequest<{productId: string, quantity: number}>,
+  res: Response,
+  next: NextFunction) => {
+    
   const { productId, quantity } = req.body;
 
   try {
@@ -18,7 +24,7 @@ export const add = async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
     
-    const newItem = {
+    const newItem: CartItem = {
       ...product,
       quantity
     };
@@ -29,7 +35,7 @@ export const add = async (req: Request, res: Response, next: NextFunction) => {
   }
 }
 
-export const updateQuantity = async (req: Request, res: Response, next: NextFunction) => {
+export const updateQuantity = async (req: TypedRequest<{quantity: number}>, res: Response, next: NextFunction) => {
   const id = req.params.id;
   const newQuantity = req.body.quantity;
   if (newQuantity === undefined || newQuantity < 0 || newQuantity > 10) {
