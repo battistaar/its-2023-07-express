@@ -1,38 +1,50 @@
 import { assign } from 'lodash';
 import { CartItem } from "./cart-item.entity";
+import { CartItem as CartItemModel } from './cart-item.model';
+import { Product } from '../product/product.entity';
 
-const CART: CartItem[] = [];
 
 export class CartItemService {
   
   async find(): Promise<CartItem[]> {
-    return CART;
+    return CartItemModel.find().populate('product');
   }
 
   async getById(id: string): Promise<CartItem | null> {
-    return CART.find(item => item.id === id) || null;
+    return this._getById(id);
+  }
+
+  private async _getById(id: string) {
+    return CartItemModel.findById(id).populate('product');
   }
 
   async add(item: CartItem): Promise<CartItem> {
-    CART.push(item);
-    return item;
+    // const newItem = new CartItemModel(item);
+    // await newItem.save();
+
+    const newItem = await CartItemModel.create(item);
+    await newItem.populate('product');
+
+    return newItem;
   }
 
   async update(id: string, data: Partial<CartItem>): Promise<CartItem> {
-    const item = await this.getById(id);
+    const item = await this._getById(id);
     if (!item) {
       throw new Error('Not Found');
     }
     assign(item, data);
+    await item.save();
+
     return item;
   }
 
   async remove(id: string): Promise<void> {
-    const index = CART.findIndex(item => item.id === id);
-    if (index === -1) {
+    const item = await this._getById(id);
+    if (!item) {
       throw new Error('Not Found');
     }
-    CART.splice(index, 1);
+    await item.deleteOne();
   }
 }
 

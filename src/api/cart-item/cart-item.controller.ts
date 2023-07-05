@@ -15,7 +15,6 @@ export const add = async (
   next: NextFunction) => {
     
   const { productId, quantity } = req.body;
-
   try {
     const product = await productService.getById(productId);
     if (!product) {
@@ -25,7 +24,7 @@ export const add = async (
     }
     
     const newItem: CartItem = {
-      ...product,
+      product: productId,
       quantity
     };
     const saved = await cartItemService.add(newItem);
@@ -38,6 +37,7 @@ export const add = async (
 export const updateQuantity = async (req: TypedRequest<{quantity: number}>, res: Response, next: NextFunction) => {
   const id = req.params.id;
   const newQuantity = req.body.quantity;
+
   if (newQuantity === undefined || newQuantity < 0 || newQuantity > 10) {
     res.status(400);
     res.send("Invalid quantity");
