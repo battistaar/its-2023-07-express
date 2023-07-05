@@ -1,7 +1,7 @@
 import { assign } from 'lodash';
 import { CartItem } from "./cart-item.entity";
 import { CartItem as CartItemModel } from './cart-item.model';
-import { Product } from '../product/product.entity';
+import { NotFoundError } from '../../errors/not-found';
 
 
 export class CartItemService {
@@ -22,6 +22,11 @@ export class CartItemService {
     // const newItem = new CartItemModel(item);
     // await newItem.save();
 
+    const existing = await CartItemModel.findOne({product: item.product});
+    if (existing) {
+      return this.update(existing.id, {quantity: existing.quantity + item.quantity});
+    }
+
     const newItem = await CartItemModel.create(item);
     await newItem.populate('product');
 
@@ -31,7 +36,7 @@ export class CartItemService {
   async update(id: string, data: Partial<CartItem>): Promise<CartItem> {
     const item = await this._getById(id);
     if (!item) {
-      throw new Error('Not Found');
+      throw new NotFoundError();
     }
     assign(item, data);
     await item.save();
@@ -42,7 +47,7 @@ export class CartItemService {
   async remove(id: string): Promise<void> {
     const item = await this._getById(id);
     if (!item) {
-      throw new Error('Not Found');
+      throw new NotFoundError();
     }
     await item.deleteOne();
   }

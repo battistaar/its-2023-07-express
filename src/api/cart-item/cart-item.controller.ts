@@ -3,6 +3,10 @@ import cartItemService from './cart-item.service';
 import productService from '../product/product.service';
 import { CartItem } from './cart-item.entity';
 import { TypedRequest } from '../../utils/typed-request.interface';
+import { NotFoundError } from '../../errors/not-found';
+import { plainToClass } from 'class-transformer';
+import { AddCartItemDTO } from './cart-item.dto';
+import { validate } from 'class-validator';
 
 export const list = async (req: Request, res: Response, next: NextFunction) => {
   const list = await cartItemService.find();
@@ -14,13 +18,20 @@ export const add = async (
   res: Response,
   next: NextFunction) => {
     
-  const { productId, quantity } = req.body;
   try {
+    const data = plainToClass(AddCartItemDTO, req.body);
+    const errors = await validate(data);
+    if (errors.length) {
+      console.log(errors);
+      next(errors);
+      return;
+    }
+
+    const { productId, quantity } = data;
+      
     const product = await productService.getById(productId);
     if (!product) {
-      res.status(404);
-      res.send();
-      return;
+      throw new NotFoundError();
     }
     
     const newItem: CartItem = {
@@ -48,12 +59,7 @@ export const updateQuantity = async (req: TypedRequest<{quantity: number}>, res:
     const updated = await cartItemService.update(id, {quantity: newQuantity});
     res.json(updated);
   } catch(err: any) {
-    if (err.message === 'Not Found') {
-      res.status(404);
-      res.send();
-    } else {
-      next(err);
-    }
+    next(err);
   }
 }
 
@@ -64,11 +70,6 @@ export const remove = async (req: Request, res: Response, next: NextFunction) =>
     res.status(204);
     res.send();
   } catch(err: any) {
-    if (err.message === 'Not Found') {
-      res.status(404);
-      res.send();
-    } else {
-      next(err);
-    }
+    next(err);
   }
 }
