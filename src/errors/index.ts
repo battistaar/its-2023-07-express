@@ -1,4 +1,5 @@
 import { genericErrorHandler } from "./generic";
 import { notFoundHandler } from "./not-found";
+import { validationErrorHandler } from "./validation";
 
-export const errorHandlers = [notFoundHandler, genericErrorHandler];
+export const errorHandlers = [notFoundHandler, validationErrorHandler, genericErrorHandler];
