@@ -3,7 +3,8 @@ import productService from './product.service';
 import { NotFoundError } from '../../errors/not-found';
 
 export const list = async (req: Request, res: Response, next: NextFunction) => {
-  const products = await productService.find();
+  console.log(req.query);
+  const products = await productService.find(req.query);
   res.json(products);
 }
 
