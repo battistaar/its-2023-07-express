@@ -1,10 +1,12 @@
+import { FilterQuery } from "mongoose";
 import { Product } from "./product.entity";
 import { Product as ProductModel } from './product.model';
+import { QueryProductDTO } from "./product.dto";
 
 export class ProductService {
 
-  async find(query: any): Promise<Product[]> {
-    const q: any = {};
+  async find(query: QueryProductDTO): Promise<Product[]> {
+    const q: FilterQuery<Product> = {};
     if (query.name) {
       q.name = {$regex: new RegExp(`^${query.name}`, 'i')};
     }
@@ -19,7 +21,10 @@ export class ProductService {
       q.netPrice['$lte'] = query.maxPrice;
     }
 
-    const list = await ProductModel.find(q);
+    const page = 3;
+    const limit = 100;
+
+    const list = await ProductModel.find(q).limit(limit);
     return list;
   }
 

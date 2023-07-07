@@ -1,4 +1,5 @@
 import { IsInt, Min, Max, IsMongoId } from "class-validator";
+import { Type } from 'class-transformer';
 
 export class AddCartItemDTO {
   @IsMongoId()
@@ -7,6 +8,7 @@ export class AddCartItemDTO {
   @IsInt()
   @Min(1)
   @Max(10)
+  @Type(() => Number)
   quantity: number;
 }
 
